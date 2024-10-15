@@ -65,6 +65,12 @@ async def execute_miio_command(data: dict, miio_service: MiIOService = Depends(g
     """
     MI_DID = data.get("mi_did") or app.state.mi_did
     command = data.get("command")
+    # 如果command是以数字0开头，那么就是命令，否则是复述
+    if command.startswith("0"):
+        # 在command的前面加上"5 "
+        command = "5-5 " + command[1:] + " #0"
+    else:
+        command = "5 " + command
 
     if not command:
         return {"error": "需要提供命令"}
@@ -72,8 +78,9 @@ async def execute_miio_command(data: dict, miio_service: MiIOService = Depends(g
         return {"error": "需要提供设备 ID（mi_did）"}
 
     try:
+        print(command)
         result = await miio_command(
-            miio_service, MI_DID, command, ""
+            miio_service, MI_DID, command, " "
         )
         if not isinstance(result, str):
             result = json.dumps(result, indent=2, ensure_ascii=False)
